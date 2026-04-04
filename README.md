@@ -1,3 +1,13 @@
+---
+title: openenv-sre-engine
+emoji: 🚨
+colorFrom: red
+colorTo: gray
+sdk: docker
+pinned: false
+tags:
+- openenv
+---
 # 🚨 OpenEnv: SRE Incident Simulator
 
 An OpenEnv-compliant reinforcement learning environment that simulates real-world Site Reliability Engineering (SRE) and DevOps incidents.
