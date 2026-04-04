@@ -26,9 +26,9 @@ def log_end(success: bool, steps: int, score: float, rewards: list):
 # ---------------------------------------------------------
 def main():
     # 1. Load credentials as mandated by the rules
-    api_base_url = os.getenv("API_BASE_URL")
+    api_base_url = os.getenv("API_BASE_URL","https://openrouter.ai/api/v1")
     api_key = os.getenv("HF_TOKEN")
-    model_name = os.getenv("MODEL_NAME", "gpt-4o-mini") # Fallback for local testing
+    model_name = os.getenv("MODEL_NAME", "qwen/qwen3.6-plus:free") # Fallback for local testing
 
     if not api_key:
         print("ERROR: HF_TOKEN environment variable not set.")
