@@ -96,28 +96,28 @@ class SREEnvironment:
         if action.command == "query_logs":
             if action.target in task_data["logs"]:
                 output = task_data["logs"][action.target]
-                # Partial Reward: AI found the right log to look at!
+                # Partial Reward: Reduced to 0.1 to leave room for the final score
                 if action.target == task_data.get("target_clue_log") and "log_found" not in self.visited_clues:
-                    reward_value = 0.2
+                    reward_value = 0.10 
                     reason = f"Good investigation! Found the critical error in {action.target} logs."
                     self.visited_clues.add("log_found")
             else:
                 output = f"ERROR: Service '{action.target}' not found."
-                reward_value = -0.05  # Slight penalty for hallucinating a service
+                reward_value = -0.01  # Slight penalty
                 reason = "Queried a non-existent service."
 
         # ACTION 2: Inspect Config
         elif action.command == "inspect_config":
             if action.target in task_data.get("configs", {}):
                 output = task_data["configs"][action.target]
-                # Partial Reward: AI found the right config file!
+                # Partial Reward: Reduced to 0.1 to leave room for the final score
                 if action.target == task_data.get("target_clue_config") and "config_found" not in self.visited_clues:
-                    reward_value = 0.2
+                    reward_value = 0.10
                     reason = f"Great debugging! Found the misconfiguration in {action.target}."
                     self.visited_clues.add("config_found")
             else:
                 output = f"ERROR: File '{action.target}' not found or permission denied."
-                reward_value = -0.05
+                reward_value = -0.01
 
         # ACTION 3: Submit Resolution (THE GRADER)
         elif action.command == "submit_resolution":
@@ -128,14 +128,18 @@ class SREEnvironment:
             matches = sum(1 for keyword in task_data["solution_keywords"] if keyword in fix_text)
             
             if matches >= 2: # Success threshold
-                reward_value = 1.0 # Max score!
+                # Maximum score is 0.99. If they got 0.2 from partials, give them 0.79 here. 
+                # If they skipped partials and just guessed the fix, give them 0.99 here.
+                current_partials = len(self.visited_clues) * 0.10
+                reward_value = 0.99 - current_partials 
                 reason = "SUCCESS: Root cause correctly identified and valid fix proposed."
                 output = "Incident resolved. System returning to normal."
             else:
-                reward_value = 0.0
+                # Minimum score is 0.01 instead of 0.0
+                reward_value = 0.01 
                 reason = "FAILURE: Proposed fix does not address the root cause."
                 output = "Fix deployed, but the system is still failing."
-
+                
         # Enforce Episode Boundaries (Timeout)
         if self.step_count >= self.max_steps and not done:
             done = True
