@@ -1,5 +1,5 @@
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from server.env import SREEnvironment
 from server.models import SREAction
 
@@ -13,9 +13,21 @@ def read_root():
     return {"status": "ok", "message": "SRE Environment is running."}
 
 @app.post("/reset")
-def reset_environment():
-    """Resets the environment and returns the initial observation."""
-    obs = sre_env.reset()
+async def reset_environment(request: Request):
+    """Resets the environment and optionally switches the task."""
+    task_id = None
+    try:
+        # Check if the validator sent task_id in the JSON body
+        data = await request.json()
+        task_id = data.get("task_id") or data.get("options", {}).get("task_id")
+    except Exception:
+        pass
+        
+    # Fallback to checking URL query parameters
+    if not task_id:
+        task_id = request.query_params.get("task_id")
+        
+    obs = sre_env.reset(task_id=task_id)
     return obs.model_dump()
 
 @app.post("/step")
