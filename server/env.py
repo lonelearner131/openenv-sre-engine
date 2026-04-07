@@ -57,24 +57,24 @@ class SREEnvironment:
     # ---------------------------------------------------------
     # CORE OPENENV METHODS
     # ---------------------------------------------------------
-        def reset(self, task_id: str = None) -> SREObservation:
-            """Starts a new episode based on the injected environment variable or explicit task_id."""
-            # Force a task switch if requested by the API or inference script
-            if task_id and task_id in self.tasks:
-                self.task_id = task_id
+    def reset(self, task_id: str = None) -> SREObservation:
+        """Starts a new episode based on the injected environment variable or explicit task_id."""
+        # Force a task switch if requested by the API or inference script
+        if task_id and task_id in self.tasks:
+            self.task_id = task_id
             
-            self.step_count = 0
-            self.visited_clues = set()
+        self.step_count = 0
+        self.visited_clues = set()
         
-            task_data = self.tasks[self.task_id]
-            services = list(task_data["logs"].keys())
+        task_data = self.tasks[self.task_id]
+        services = list(task_data["logs"].keys())
         
-            return SREObservation(
-                ticket_description=task_data["ticket"],
-                last_command_output="System initialized. Waiting for commands...",
-                services_available=services,
-                step_count=self.step_count
-            )
+        return SREObservation(
+            ticket_description=task_data["ticket"],
+            last_command_output="System initialized. Waiting for commands...",
+            services_available=services,
+            step_count=self.step_count
+        )
 
     def state(self) -> SREObservation:
         """Returns the current state (required by OpenEnv spec)."""
