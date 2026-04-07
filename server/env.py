@@ -57,8 +57,12 @@ class SREEnvironment:
     # ---------------------------------------------------------
     # CORE OPENENV METHODS
     # ---------------------------------------------------------
-    def reset(self) -> SREObservation:
-        """Starts a new episode based on the injected environment variable."""
+   def reset(self, task_id: str = None) -> SREObservation:
+        """Starts a new episode based on the injected environment variable or explicit task_id."""
+        # Force a task switch if requested by the API or inference script
+        if task_id and task_id in self.tasks:
+            self.task_id = task_id
+            
         self.step_count = 0
         self.visited_clues = set()
         
