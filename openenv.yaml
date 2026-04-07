@@ -21,7 +21,7 @@ tasks:
   - id: "task_2_medium"
     description: "Identify a database timeout in the Payment service caused by a bad connection pool configuration."
     expected_difficulty: "medium"
-    garder: true  # <--- ADD THIS
+    grader: true  # <--- ADD THIS
       
   - id: "task_3_hard"
     description: "Resolve a cascading failure involving an expired SSL certificate that is taking down the API Gateway and Inventory service."
