@@ -34,63 +34,63 @@ def log_end(success: bool, steps: int, score: float, rewards: list):
 # MAIN INFERENCE LOOP
 # ---------------------------------------------------------
 def main():
-    # 1. Load credentials as mandated by the rules
-    api_base_url = os.getenv("API_BASE_URL","https://openrouter.ai/api/v1")  # Fallback for local testing
-    api_key = os.getenv("API_KEY") 
-    if not api_key:
-        api_key = os.getenv("HF_TOKEN") # Fallback to your personal key for local testing
-    model_name = os.getenv("MODEL_NAME", "qwen/qwen3.6-plus:free") # Fallback for local testing
+    # Load credentials as mandated by the rules
+    api_base_url = os.getenv("API_BASE_URL","https://openrouter.ai/api/v1") 
+    api_key = os.getenv("HF_TOKEN") # Using HF_TOKEN per mandatory instructions
+    model_name = os.getenv("MODEL_NAME", "qwen/qwen3.6-plus:free")
 
     if not api_key:
         print("ERROR: HF_TOKEN environment variable not set.")
         return
 
-    # Initialize OpenAI Client
     client = OpenAI(base_url=api_base_url, api_key=api_key)
-
-    # Initialize our OpenEnv Simulator
     env = SREEnvironment()
     
-    # Tracking variables
-    rewards = []
-    steps_taken = 0
-    score = 0.0
-    success = False
+    # ---------------------------------------------------------
+    # CRITICAL FIX: Loop over all 3 tasks for the baseline
+    # ---------------------------------------------------------
+    tasks_to_run = ["task_1_easy", "task_2_medium", "task_3_hard"]
     
-    # 2. Emit the required [START] log
-    log_start(task=env.task_id, env_name="sre-incident-simulator", model=model_name)
-
-    try:
-        # Start the episode
-        observation = env.reset()
-        done = False
+    for current_task in tasks_to_run:
+        rewards = []
+        steps_taken = 0
+        score = 0.0
+        success = False
         
-        # System prompt instructing the LLM exactly how to act and format its JSON
-        messages = [
-            {
-                "role": "system", 
-                "content": (
-                    "You are an elite Site Reliability Engineer responding to a critical outage. "
-                    "You must output your action as a raw JSON object and nothing else. Do NOT wrap it in markdown backticks.\n\n"
-                    "Your JSON MUST strictly match this exact schema:\n"
-                    "{\n"
-                    '  "command": "query_logs" | "inspect_config" | "submit_resolution",\n'
-                    '  "target": "name_of_service_or_file_to_check",\n'
-                    '  "proposed_fix": "description of the fix (ONLY include this if command is submit_resolution)"\n'
-                    "}"
-                )
-            }
-        ]
+        # Emit the required [START] log
+        log_start(task=current_task, env_name="sre-incident-simulator", model=model_name)
 
-        while not done:
-            steps_taken += 1
-            error_msg = None
-            action_log_str = ""
-            reward_val = 0.0
+        try:
+            # Pass the specific task_id to the reset function
+            observation = env.reset(task_id=current_task)
+            done = False
+            
+            messages = [
+                {
+                    "role": "system", 
+                    "content": (
+                        "You are an elite Site Reliability Engineer responding to a critical outage. "
+                        "You must output your action as a raw JSON object and nothing else. Do NOT wrap it in markdown backticks.\n\n"
+                        "Your JSON MUST strictly match this exact schema:\n"
+                        "{\n"
+                        '  "command": "query_logs" | "inspect_config" | "submit_resolution",\n'
+                        '  "target": "name_of_service_or_file_to_check",\n'
+                        '  "proposed_fix": "description of the fix (ONLY include this if command is submit_resolution)"\n'
+                        "}"
+                    )
+                }
+            ]
 
-            # Add the current observation to the LLM's context
-            obs_json = observation.model_dump_json()
-            messages.append({"role": "user", "content": f"Current Status: {obs_json}"})
+            while not done:
+                # ... Keep your exact same while loop logic here ...
+                # (Make sure indentation matches the new try/while blocks)
+                steps_taken += 1
+                error_msg = None
+                action_log_str = ""
+                reward_val = 0.0
+
+                obs_json = observation.model_dump_json()
+                messages.append({"role": "user", "content": f"Current Status: {obs_json}"})
 
             try:
                 # Use standard completion (works perfectly with OpenRouter and all open-source models)
