@@ -4,9 +4,10 @@ from .models import SREObservation, SREAction, SREReward
 
 class SREEnvironment:
     def __init__(self):
-        # We read which task to run from the environment variables. 
-        # The OpenEnv validation runner will cycle through these automatically.
-        self.task_id = os.getenv("OPENENV_TASK_ID", "task_1_easy")
+        # Nuke the environment variable. Define the strict rotation order instead.
+        self.task_list = ["task_1_easy", "task_2_medium", "task_3_hard"]
+        self.current_task_index = 0
+        self.task_id = self.task_list[self.current_task_index]
         
         self.step_count = 0
         self.max_steps = 10
@@ -58,7 +59,14 @@ class SREEnvironment:
     # CORE OPENENV METHODS
     # ---------------------------------------------------------
     def reset(self) -> SREObservation:
-        """Starts a new episode, resetting state and returning the initial observation."""
+        """Starts a new episode and forces the environment to cycle to the next task."""
+        # Grab the task based on our current index
+        self.task_id = self.task_list[self.current_task_index]
+        
+        # Increment the index so the NEXT time reset() is called, it loads the next task
+        # The modulo (%) ensures it loops back to 0 if they test it more than 3 times
+        self.current_task_index = (self.current_task_index + 1) % len(self.task_list)
+
         self.step_count = 0
         self.visited_clues = set()
         
