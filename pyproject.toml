@@ -9,7 +9,6 @@ dependencies = [
     "openai",
     "openenv-core",
 ]
-# Critical: Must be 3.10+ for openenv-core
 requires-python = ">=3.10"
 
 [build-system]
@@ -18,15 +17,6 @@ build-backend = "hatchling.build"
 
 [project.scripts]
 server = "server.app:main"
-[tool.openenv.tasks]
-task_1_easy = { grader = true }
-task_2_medium = { grader = true }
-task_3_hard = { grader = true }
-
-[tool.tasks]
-task_1_easy = { grader = true }
-task_2_medium = { grader = true }
-task_3_hard = { grader = true }
 
 [tool.hatch.build.targets.wheel]
 packages = ["server"]
